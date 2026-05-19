@@ -1,11 +1,17 @@
 import AppKit
+import KeyboardShortcuts
 
 /// Owns the menu bar status item and its menu. All actions route through
 /// `@objc` selectors so targets/closures stay main-actor safe.
 @MainActor
-final class MenuBarController: NSObject {
+final class MenuBarController: NSObject, NSMenuDelegate {
     private var statusItem: NSStatusItem?
     private let settings = SettingsWindowController()
+    private let openURLItem = NSMenuItem(
+        title: "Open URL If Found",
+        action: #selector(toggleOpenURL(_:)),
+        keyEquivalent: ""
+    )
 
     override init() {
         super.init()
@@ -19,6 +25,7 @@ final class MenuBarController: NSObject {
         )
 
         let menu = NSMenu()
+        menu.delegate = self
 
         let scanScreen = NSMenuItem(
             title: "Scan Screen for QR Code",
@@ -26,6 +33,8 @@ final class MenuBarController: NSObject {
             keyEquivalent: ""
         )
         scanScreen.target = self
+        // Reflects the user's recorded hotkey and stays in sync automatically.
+        scanScreen.setShortcut(for: .scanScreen)
         menu.addItem(scanScreen)
 
         let scanSelection = NSMenuItem(
@@ -34,7 +43,14 @@ final class MenuBarController: NSObject {
             keyEquivalent: ""
         )
         scanSelection.target = self
+        scanSelection.setShortcut(for: .scanSelection)
         menu.addItem(scanSelection)
+
+        menu.addItem(.separator())
+
+        openURLItem.target = self
+        openURLItem.state = AppPreferences.openURLIfFound ? .on : .off
+        menu.addItem(openURLItem)
 
         menu.addItem(.separator())
 
@@ -60,12 +76,33 @@ final class MenuBarController: NSObject {
         self.statusItem = statusItem
     }
 
+    // MARK: - NSMenuDelegate
+
+    func menuWillOpen(_ menu: NSMenu) {
+        // While a menu is open, NSMenu puts the thread in tracking mode, so
+        // global hotkey events buffer and fire on close. Disable them for the
+        // duration (the displayed shortcut still shows on the menu items).
+        KeyboardShortcuts.disable(.scanScreen, .scanSelection)
+        openURLItem.state = AppPreferences.openURLIfFound ? .on : .off
+    }
+
+    func menuDidClose(_ menu: NSMenu) {
+        KeyboardShortcuts.enable(.scanScreen, .scanSelection)
+    }
+
+    // MARK: - Actions
+
     @objc private func scanScreen(_ sender: Any?) {
         ScanEngine.shared.performScan(.fullScreen)
     }
 
     @objc private func scanSelection(_ sender: Any?) {
         ScanEngine.shared.performScan(.selection)
+    }
+
+    @objc private func toggleOpenURL(_ sender: Any?) {
+        AppPreferences.openURLIfFound.toggle()
+        openURLItem.state = AppPreferences.openURLIfFound ? .on : .off
     }
 
     @objc private func openSettings(_ sender: Any?) {

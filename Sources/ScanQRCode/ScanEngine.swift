@@ -45,6 +45,19 @@ final class ScanEngine {
         }
     }
 
+    /// A payload is treated as openable only if it is a well-formed http(s)
+    /// URL with a host — we deliberately don't auto-open arbitrary schemes
+    /// (mailto:, tel:, custom app schemes) from a scanned code.
+    private static func webURL(from payload: String) -> URL? {
+        let trimmed = payload.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let url = URL(string: trimmed),
+              let scheme = url.scheme?.lowercased(),
+              scheme == "http" || scheme == "https",
+              url.host?.isEmpty == false
+        else { return nil }
+        return url
+    }
+
     private enum Outcome {
         case success(String)
         case failure(ScanError)
@@ -56,6 +69,9 @@ final class ScanEngine {
             let pasteboard = NSPasteboard.general
             pasteboard.clearContents()
             pasteboard.setString(payload, forType: .string)
+            if AppPreferences.openURLIfFound, let url = Self.webURL(from: payload) {
+                NSWorkspace.shared.open(url)
+            }
             feedback?.showSuccess(payload: payload)
 
         case .failure(.cancelled):
