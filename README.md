@@ -130,7 +130,9 @@ and rebuild before shipping if you want something custom.
 | `ScanQRCode.entitlements` | App Sandbox entitlement |
 | `scripts/build-app.sh` | Assembles + signs the `.app` bundle |
 | `scripts/make-icon.sh` | Generates the placeholder app icon |
+| `scripts/make-screenshot.sh` | Generates the App Store screenshot |
 | `scripts/package-mas.sh` | Signs + builds the App Store `.pkg` |
+| `docs/app-store-listing.md` | Copy/paste listing text + review answers |
 | `fastlane/Fastfile` | `certs` / `package` / `upload` / `release` lanes |
 
 ## License
