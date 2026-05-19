@@ -54,6 +54,17 @@ Requires Xcode / Swift toolchain (Swift 5.9+).
 To put an icon on the app, drop an `AppIcon.icns` into `Resources/` before
 building.
 
+To test the install flow from scratch, fully uninstall first:
+
+```bash
+./scripts/uninstall.sh            # quit app, remove .app, reset permission + settings
+./scripts/uninstall.sh --purge    # also wipe .build/ and build/ for a cold rebuild
+./scripts/uninstall.sh --dry-run  # preview without changing anything
+```
+
+This resets the Screen Recording grant and clears stored hotkeys, so the next
+launch reproduces a first-run experience.
+
 ### Development
 
 ```bash
