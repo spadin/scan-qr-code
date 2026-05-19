@@ -95,6 +95,20 @@ final class HUDFeedback: ScanFeedback {
 
     // MARK: - View
 
+    /// A stretchable rounded-rectangle mask. The center is stretched and the
+    /// corners are preserved via cap insets, so it rounds any panel size.
+    private static func roundedMaskImage(cornerRadius radius: CGFloat) -> NSImage {
+        let edge = radius * 2 + 1
+        let image = NSImage(size: NSSize(width: edge, height: edge), flipped: false) { rect in
+            NSColor.black.setFill()
+            NSBezierPath(roundedRect: rect, xRadius: radius, yRadius: radius).fill()
+            return true
+        }
+        image.capInsets = NSEdgeInsets(top: radius, left: radius, bottom: radius, right: radius)
+        image.resizingMode = .stretch
+        return image
+    }
+
     private func makeContentView(
         symbol: String,
         tint: NSColor,
@@ -105,9 +119,11 @@ final class HUDFeedback: ScanFeedback {
         effect.material = .hudWindow
         effect.blendingMode = .behindWindow
         effect.state = .active
-        effect.wantsLayer = true
-        effect.layer?.cornerRadius = 14
-        effect.layer?.masksToBounds = true
+        // A behind-window material is composited by the window server over the
+        // view's rectangular region — layer.cornerRadius does NOT clip it. The
+        // supported way to round it (and the window shadow with it) is a
+        // resizable rounded-rect mask image.
+        effect.maskImage = Self.roundedMaskImage(cornerRadius: 14)
         effect.translatesAutoresizingMaskIntoConstraints = false
 
         let icon = NSImageView()
