@@ -1,0 +1,72 @@
+# Mac App Store release pipeline for Scan QR Code.
+#
+# This is a SwiftPM app (no .xcodeproj), so the build itself is done by
+# scripts/build-app.sh + scripts/package-mas.sh; fastlane handles the parts it
+# does best: signing assets and uploading to App Store Connect.
+#
+# Prerequisites (one-time, see README "Mac App Store submission"):
+#   1. Apple Developer Program membership.
+#   2. App record + bundle ID `com.sandropadin.ScanQRCode` in App Store Connect.
+#   3. An App Store Connect API key (.p8). Export before running:
+#        export ASC_KEY_ID=XXXXXXXXXX
+#        export ASC_ISSUER_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+#        export ASC_KEY_PATH="$HOME/.appstoreconnect/AuthKey_XXXXXXXXXX.p8"
+#
+# Usage:  fastlane certs   |   fastlane package   |   fastlane upload
+#         fastlane release   (certs → package → upload)
+
+default_platform(:mac)
+
+def asc_api_key
+  return nil unless ENV["ASC_KEY_ID"] && ENV["ASC_ISSUER_ID"] && ENV["ASC_KEY_PATH"]
+  app_store_connect_api_key(
+    key_id: ENV["ASC_KEY_ID"],
+    issuer_id: ENV["ASC_ISSUER_ID"],
+    key_filepath: ENV["ASC_KEY_PATH"]
+  )
+end
+
+platform :mac do
+  desc "Create/fetch the Apple Distribution cert and Mac App Store profile"
+  lane :certs do
+    key = asc_api_key
+    # Apple Distribution signing certificate (for the .app).
+    cert(platform: "macos", api_key: key)
+    # Mac App Store provisioning profile for the bundle ID.
+    sigh(
+      platform: "macos",
+      app_identifier: "com.sandropadin.ScanQRCode",
+      api_key: key
+    )
+    UI.message("Distribution cert + profile ready.")
+    UI.important("The 'Mac Installer Distribution' certificate must be " \
+      "created once in the Developer portal (or Xcode ▸ Settings ▸ Accounts " \
+      "▸ Manage Certificates) — fastlane cannot mint installer certs.")
+  end
+
+  desc "Build + sign the .app and produce a signed .pkg for the App Store"
+  lane :package do
+    sh("cd .. && ./scripts/package-mas.sh")
+  end
+
+  desc "Upload the signed .pkg to App Store Connect"
+  lane :upload do
+    pkg = File.expand_path("../build/ScanQRCode.pkg", __dir__)
+    UI.user_error!("No package at #{pkg} — run `fastlane package` first.") unless File.exist?(pkg)
+    upload_to_app_store(
+      pkg: pkg,
+      api_key: asc_api_key,
+      skip_metadata: true,
+      skip_screenshots: true,
+      precheck_include_in_app_purchases: false,
+      submit_for_review: false
+    )
+  end
+
+  desc "Full release: certs → package → upload"
+  lane :release do
+    certs
+    package
+    upload
+  end
+end

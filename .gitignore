@@ -3,3 +3,11 @@ build/
 .DS_Store
 *.xcodeproj
 .swiftpm/
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/test_output
+*.provisionprofile
+*.mobileprovision
+*.p8
+*.cer
+*.certSigningRequest

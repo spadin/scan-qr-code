@@ -1,0 +1,6 @@
+app_identifier("com.sandropadin.ScanQRCode")
+apple_id("sandropadin@gmail.com")
+
+# Filled in automatically once you're enrolled in the Apple Developer Program
+# (or set FASTLANE_TEAM_ID / ASC team in the environment).
+# team_id("XXXXXXXXXX")

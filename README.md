@@ -79,26 +79,39 @@ swift test       # run the QR-detection + utility tests
 
 ## Mac App Store submission
 
-The code is store-eligible (sandboxed, no private APIs, in-process capture).
-The remaining steps are account/tooling, not code:
+The code is store-eligible (sandboxed, no private APIs, in-process capture) and
+release tooling is wired with **fastlane**. The remaining work is account
+setup, not code.
 
-1. **Apple Developer Program** membership ($99/yr).
-2. In **App Store Connect**, create the app record and bundle ID
-   `com.sandropadin.ScanQRCode`.
-3. Certificates/profile: an **Apple Distribution** signing certificate, a
-   **Mac Installer Distribution** certificate, and a **Mac App Store**
-   provisioning profile for the bundle ID.
-4. Sign the `.app` with the Apple Distribution cert + embedded provisioning
-   profile + `ScanQRCode.entitlements`, build a signed installer with
-   `productbuild --component build/ScanQRCode.app /Applications \
-   --sign "3rd Party Mac Developer Installer: …" ScanQRCode.pkg`, then upload
-   with **Transporter** (or `xcrun altool --upload-app -f ScanQRCode.pkg -t macos`).
-5. Submit for review from App Store Connect.
+**One-time account steps (manual — only you can do these):**
 
-> A SwiftPM-only project can't produce a store `.pkg` from `swift build` alone;
-> step 4 needs the distribution cert + provisioning profile in the keychain.
-> A thin Xcode project (or `xcodebuild` archive) wrapper makes the
-> archive/upload flow turnkey — ask if you want one generated.
+1. Enroll in the **Apple Developer Program** ($99/yr).
+2. In **App Store Connect**, create the app record and register bundle ID
+   `com.sandropadin.ScanQRCode`. Add a privacy policy URL and answer App
+   Privacy as **"Data Not Collected."**
+3. Create a **Mac Installer Distribution** certificate once (Developer portal,
+   or Xcode ▸ Settings ▸ Accounts ▸ Manage Certificates). fastlane mints the
+   Apple Distribution cert + provisioning profile for you.
+4. Create an **App Store Connect API key** (.p8) and export:
+
+   ```bash
+   export ASC_KEY_ID=XXXXXXXXXX
+   export ASC_ISSUER_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+   export ASC_KEY_PATH="$HOME/.appstoreconnect/AuthKey_XXXXXXXXXX.p8"
+   ```
+
+**Then the whole release is:**
+
+```bash
+fastlane release      # certs → build+sign .pkg → upload to App Store Connect
+```
+
+or step by step: `fastlane certs`, `fastlane package`, `fastlane upload`.
+Submit for review from App Store Connect once the build finishes processing.
+
+The icon is a generated placeholder (`./scripts/make-icon.sh`); replace the
+artwork in `Resources/AppIcon-1024.png` (or edit the drawing in that script)
+and rebuild before shipping if you want something custom.
 
 ## Project layout
 
@@ -116,6 +129,9 @@ The remaining steps are account/tooling, not code:
 | `Sources/ScanQRCode/Preferences.swift` | UserDefaults-backed toggles |
 | `ScanQRCode.entitlements` | App Sandbox entitlement |
 | `scripts/build-app.sh` | Assembles + signs the `.app` bundle |
+| `scripts/make-icon.sh` | Generates the placeholder app icon |
+| `scripts/package-mas.sh` | Signs + builds the App Store `.pkg` |
+| `fastlane/Fastfile` | `certs` / `package` / `upload` / `release` lanes |
 
 ## License
 
