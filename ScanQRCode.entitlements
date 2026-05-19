@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	  App Sandbox is mandatory for the Mac App Store. This app needs no
+	  additional entitlements: ScreenCaptureKit is TCC-gated (not
+	  entitlement-gated), the clipboard and opening http(s) URLs are
+	  allowed in the sandbox, and global hotkeys use Carbon RegisterEventHotKey
+	  which is sandbox-safe. No network, no file access.
+	-->
+	<key>com.apple.security.app-sandbox</key>
+	<true/>
+</dict>
+</plist>

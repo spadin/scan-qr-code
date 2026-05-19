@@ -2,9 +2,9 @@ import AppKit
 
 /// Orchestrates the scan pipeline: capture → detect → clipboard → feedback.
 ///
-/// This is the single entry point both the menu items and the global
-/// hotkeys call. Capture and Vision detection are blocking, so they run off
-/// the main thread; clipboard writes and feedback happen back on the main actor.
+/// This is the single entry point both the menu items and the global hotkeys
+/// call. Capture is async (ScreenCaptureKit); Vision detection is offloaded so
+/// it never blocks the main actor. Clipboard and feedback run on main.
 @MainActor
 final class ScanEngine {
     static let shared = ScanEngine()
@@ -20,27 +20,29 @@ final class ScanEngine {
         let capturer = self.capturer
         let detector = self.detector
 
-        Task.detached(priority: .userInitiated) {
+        Task {
             do {
-                let imageURL: URL
+                let image: CGImage
                 switch mode {
                 case .fullScreen:
-                    imageURL = try capturer.captureFullScreen()
+                    image = try await capturer.captureFullScreen()
                 case .selection:
-                    imageURL = try capturer.captureSelection()
+                    image = try await capturer.captureSelection()
                 }
-                defer { capturer.cleanup(imageURL) }
 
-                let payloads = try detector.detect(in: imageURL)
+                let payloads = try await Task.detached(priority: .userInitiated) {
+                    try detector.detect(in: image)
+                }.value
+
                 guard let first = payloads.first, !first.isEmpty else {
-                    await self.handle(.failure(.noCodeFound), mode: mode)
+                    self.handle(.failure(.noCodeFound), mode: mode)
                     return
                 }
-                await self.handle(.success(first), mode: mode)
+                self.handle(.success(first), mode: mode)
             } catch let error as ScanError {
-                await self.handle(.failure(error), mode: mode)
+                self.handle(.failure(error), mode: mode)
             } catch {
-                await self.handle(.failure(.detection(error.localizedDescription)), mode: mode)
+                self.handle(.failure(.detection(error.localizedDescription)), mode: mode)
             }
         }
     }
@@ -75,7 +77,7 @@ final class ScanEngine {
             feedback?.showSuccess(payload: payload)
 
         case .failure(.cancelled):
-            // User aborted the crosshair selection — silent, like the reference.
+            // User aborted the region selection — silent, like the reference.
             break
 
         case .failure(.noCodeFound):
@@ -99,14 +101,13 @@ final class ScanEngine {
     }
 }
 
-// MARK: - Placeholder implementations (replaced by Agent A at launch wiring)
+// MARK: - Placeholder implementations (replaced by AppDelegate at launch)
 
 private struct UnconfiguredCapturer: ScreenCapturing {
-    func captureFullScreen() throws -> URL { throw ScanError.captureFailed }
-    func captureSelection() throws -> URL { throw ScanError.captureFailed }
-    func cleanup(_ url: URL) {}
+    func captureFullScreen() async throws -> CGImage { throw ScanError.captureFailed }
+    func captureSelection() async throws -> CGImage { throw ScanError.captureFailed }
 }
 
 private struct UnconfiguredDetector: QRDetecting {
-    func detect(in imageURL: URL) throws -> [String] { [] }
+    func detect(in image: CGImage) throws -> [String] { [] }
 }

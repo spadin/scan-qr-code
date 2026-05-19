@@ -4,7 +4,9 @@ import PackageDescription
 let package = Package(
     name: "ScanQRCode",
     platforms: [
-        .macOS(.v13)
+        // ScreenCaptureKit's SCScreenshotManager (in-process, sandbox-safe
+        // capture) requires macOS 14.
+        .macOS(.v14)
     ],
     dependencies: [
         .package(

@@ -64,7 +64,7 @@ cat > "$APP_DIR/Contents/Info.plist" <<PLIST
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>CFBundleShortVersionString</key><string>1.0.0</string>
   <key>CFBundleVersion</key><string>1</string>
-  <key>LSMinimumSystemVersion</key><string>13.0</string>
+  <key>LSMinimumSystemVersion</key><string>14.0</string>
   <key>LSUIElement</key><true/>
   <key>NSHumanReadableCopyright</key><string>MIT License</string>
   $ICON_KEY
@@ -91,7 +91,11 @@ if [[ "$IDENTITY" == "-" ]]; then
 else
   echo "▸ Code signing as: $IDENTITY"
 fi
-codesign --force --deep --sign "$IDENTITY" "$APP_DIR" >/dev/null
+# The App Sandbox entitlement is required for the Mac App Store and is applied
+# even for local dev builds so behavior matches the shipped app.
+ENTITLEMENTS="$ROOT/ScanQRCode.entitlements"
+codesign --force --deep --sign "$IDENTITY" \
+  --entitlements "$ENTITLEMENTS" "$APP_DIR" >/dev/null
 
 echo "✓ Built $APP_DIR"
 

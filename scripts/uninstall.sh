@@ -68,6 +68,14 @@ fi
 echo "==> Clearing stored hotkeys / preferences ..."
 run defaults delete "${BUNDLE_ID}" 2>/dev/null || echo "  (no preferences found)"
 
+echo "==> Removing sandbox container ..."
+CONTAINER="${HOME}/Library/Containers/${BUNDLE_ID}"
+if [[ -d "${CONTAINER}" ]]; then
+  run rm -rf "${CONTAINER}"
+else
+  echo "  (no container found)"
+fi
+
 if [[ "${PURGE}" == "1" ]]; then
   echo "==> Purging build artifacts ..."
   run rm -rf "${ROOT}/.build" "${ROOT}/build"

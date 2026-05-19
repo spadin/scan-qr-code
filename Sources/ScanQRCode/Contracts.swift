@@ -1,29 +1,27 @@
-import Foundation
+import CoreGraphics
 
 // MARK: - Stable seam between the two feature areas.
 //
-// Agent A (capture + Vision detection) implements `ScreenCapturing` and
-// `QRDetecting`. Agent B (menubar / hotkeys / settings / HUD) implements
-// `ScanFeedback`. The orchestration in `ScanEngine` only talks to these
-// protocols, so the two feature areas never touch each other's code.
+// The capture side implements `ScreenCapturing` and `QRDetecting`; the UI side
+// implements `ScanFeedback`. The orchestration in `ScanEngine` only talks to
+// these protocols.
+//
+// Capture is fully in-process (ScreenCaptureKit) — no temp files, no shelling
+// out — so the app runs in the App Sandbox required by the Mac App Store. The
+// seam passes a `CGImage` rather than a file URL for the same reason.
 
-/// Captures pixels from the screen to a temporary PNG file on disk.
+/// Captures pixels from the screen, in-process, as a `CGImage`.
 protocol ScreenCapturing {
-    /// Capture the entire screen.
-    /// - Returns: URL of a temporary PNG. Caller owns it and must call `cleanup`.
+    /// Capture the main display.
     /// - Throws: `ScanError.screenRecordingPermissionDenied` if TCC denied,
     ///           `ScanError.captureFailed` for any other failure.
-    func captureFullScreen() throws -> URL
+    func captureFullScreen() async throws -> CGImage
 
-    /// Present the macOS crosshair and capture the selected region.
-    /// - Returns: URL of a temporary PNG. Caller owns it and must call `cleanup`.
+    /// Let the user drag a region selection, then capture just that region.
     /// - Throws: `ScanError.cancelled` if the user pressed Escape / aborted,
     ///           `ScanError.screenRecordingPermissionDenied`,
     ///           `ScanError.captureFailed` otherwise.
-    func captureSelection() throws -> URL
-
-    /// Best-effort deletion of a temp file produced by this capturer.
-    func cleanup(_ url: URL)
+    func captureSelection() async throws -> CGImage
 }
 
 /// Decodes 2D barcodes from an image using Apple's Vision framework.
@@ -31,7 +29,7 @@ protocol QRDetecting {
     /// Detect QR / Aztec / DataMatrix / PDF417 payloads in the image.
     /// - Returns: decoded payload strings in detection order (possibly empty).
     /// - Throws: `ScanError.detection` if Vision itself fails.
-    func detect(in imageURL: URL) throws -> [String]
+    func detect(in image: CGImage) throws -> [String]
 }
 
 /// User-facing feedback. All calls arrive on the main actor.
