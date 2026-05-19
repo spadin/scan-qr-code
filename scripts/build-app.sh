@@ -72,8 +72,26 @@ cat > "$APP_DIR/Contents/Info.plist" <<PLIST
 </plist>
 PLIST
 
-echo "▸ Ad-hoc code signing…"
-codesign --force --deep --sign - "$APP_DIR" >/dev/null
+# TCC (Screen Recording) permission is keyed to the code signature, not the
+# bundle ID. Ad-hoc signatures change every rebuild, so the grant never
+# persists. Sign with a stable identity (Apple Development / Developer ID) and
+# the permission survives rebuilds. Override with CODESIGN_IDENTITY=…; set it
+# to "-" to force ad-hoc.
+if [[ -n "${CODESIGN_IDENTITY:-}" ]]; then
+  IDENTITY="$CODESIGN_IDENTITY"
+else
+  IDENTITY="$(security find-identity -v -p codesigning 2>/dev/null \
+    | grep -oE '"(Apple Development|Developer ID Application): [^"]+"' \
+    | head -1 | tr -d '"')"
+  IDENTITY="${IDENTITY:--}"
+fi
+
+if [[ "$IDENTITY" == "-" ]]; then
+  echo "▸ Ad-hoc code signing (no stable identity — permission will re-prompt each build)…"
+else
+  echo "▸ Code signing as: $IDENTITY"
+fi
+codesign --force --deep --sign "$IDENTITY" "$APP_DIR" >/dev/null
 
 echo "✓ Built $APP_DIR"
 
