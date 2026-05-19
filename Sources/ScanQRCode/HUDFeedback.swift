@@ -63,10 +63,15 @@ final class HUDFeedback: ScanFeedback {
 
         panel.alphaValue = 0
         panel.orderFrontRegardless()
+        panel.invalidateShadow()
         NSAnimationContext.runAnimationGroup { ctx in
             ctx.duration = 0.15
             panel.animator().alphaValue = 1
         }
+        // The window shadow is derived from the rectangular backing and cached
+        // before the rounded material has drawn — recompute it once the corner
+        // mask is on screen so the shadow follows the corner radius.
+        DispatchQueue.main.async { panel.invalidateShadow() }
         self.panel = panel
 
         let work = DispatchWorkItem { [weak self] in
