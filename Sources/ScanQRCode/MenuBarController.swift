@@ -21,7 +21,7 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         statusItem.button?.image = NSImage(
             systemSymbolName: "qrcode.viewfinder",
-            accessibilityDescription: "Scan QR Code"
+            accessibilityDescription: "Scan Screen QR Code"
         )
 
         let menu = NSMenu()
@@ -65,7 +65,7 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         menu.addItem(.separator())
 
         let quit = NSMenuItem(
-            title: "Quit Scan QR Code",
+            title: "Quit Scan Screen QR Code",
             action: #selector(quit(_:)),
             keyEquivalent: "q"
         )

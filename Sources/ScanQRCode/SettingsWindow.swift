@@ -15,7 +15,7 @@ final class SettingsWindowController {
         if window == nil {
             let hosting = NSHostingController(rootView: SettingsView())
             let window = NSWindow(contentViewController: hosting)
-            window.title = "Scan QR Code Settings"
+            window.title = "Scan Screen QR Code Settings"
             window.styleMask = [.titled, .closable]
             window.isReleasedWhenClosed = false
             window.setContentSize(NSSize(width: 420, height: 220))
