@@ -22,7 +22,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
 APP_NAME="ScanQRCode"
-BUNDLE_ID="com.spadin.ScanQRCode"
+BUNDLE_ID="com.sandropadin.ScanQRCode"
 APP_DIR="$ROOT/build/$APP_NAME.app"
 BIN_DIR="$APP_DIR/Contents/MacOS"
 RES_DIR="$APP_DIR/Contents/Resources"

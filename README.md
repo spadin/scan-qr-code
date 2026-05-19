@@ -38,7 +38,7 @@ The screenshot is deleted immediately after detection and never persisted.
 macOS requires **Screen Recording** permission for any screen capture. On the
 first scan the system prompts you; grant it in **System Settings ▸ Privacy &
 Security ▸ Screen Recording**, then scan again. The app is ad-hoc signed with a
-stable bundle identifier (`com.spadin.ScanQRCode`), so the permission survives
+stable bundle identifier (`com.sandropadin.ScanQRCode`), so the permission survives
 rebuilds.
 
 ## Build
