@@ -27,6 +27,20 @@ def asc_api_key
 end
 
 platform :mac do
+  desc "One-time: register the bundle ID + create the App Store Connect app record"
+  lane :setup do
+    # Replaces the manual Developer-portal + App Store Connect clicking:
+    # `produce` registers the App ID and creates the macOS app record.
+    produce(
+      app_name: "Scan QR Code",
+      app_identifier: "com.sandropadin.ScanQRCode",
+      platforms: ["osx"],
+      api_key: asc_api_key
+    )
+    certs
+    UI.success("App record + bundle ID + signing assets ready.")
+  end
+
   desc "Create/fetch the Apple Distribution cert and Mac App Store profile"
   lane :certs do
     key = asc_api_key
