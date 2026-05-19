@@ -32,7 +32,7 @@ platform :mac do
     # Replaces the manual Developer-portal + App Store Connect clicking:
     # `produce` registers the App ID and creates the macOS app record.
     produce(
-      app_name: "Scan QR Code",
+      app_name: "Scan Screen QR Code",
       app_identifier: "com.sandropadin.ScanQRCode",
       platforms: ["osx"],
       api_key: asc_api_key
