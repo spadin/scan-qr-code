@@ -47,6 +47,14 @@ Build + sign the .app and produce a signed .pkg for the App Store
 
 Upload the signed .pkg to App Store Connect
 
+### mac verify
+
+```sh
+[bundle exec] fastlane mac verify
+```
+
+Validate the signed .pkg against App Store Connect (no upload)
+
 ### mac release
 
 ```sh
@@ -54,6 +62,14 @@ Upload the signed .pkg to App Store Connect
 ```
 
 Full release: certs → package → upload
+
+### mac status
+
+```sh
+[bundle exec] fastlane mac status
+```
+
+Show recent builds + their App Store Connect processing state
 
 ----
 
