@@ -17,9 +17,10 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-APP_NAME="ScanQRCode"
+APP_NAME="ScanQRCode"                   # internal name (executable, scheme)
+APP_DISPLAY_NAME="Scan Screen QR Code"  # user-visible .app bundle filename
 BUNDLE_ID="com.sandropadin.ScanQRCode"
-APP="$ROOT/build/$APP_NAME.app"
+APP="$ROOT/build/$APP_DISPLAY_NAME.app"
 PKG="$ROOT/build/$APP_NAME.pkg"
 
 fail() { echo "✗ $1" >&2; exit 1; }

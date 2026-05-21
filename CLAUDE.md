@@ -58,7 +58,12 @@ does. Don't widen the seam casually — it's deliberately small.
 - Public / store / `CFBundleDisplayName`: **"Scan Screen QR Code"**.
 - Bundle ID: **`com.sandropadin.ScanQRCode`** — registered, app record tied to
   it. Never change.
-- Internal `CFBundleName` / target / executable: `ScanQRCode`.
+- Internal `CFBundleName` / target / executable / Xcode scheme: `ScanQRCode`.
+- The assembled `.app` **bundle filename** is `Scan Screen QR Code.app` — this
+  is what Finder / the Applications folder display (macOS shows the bundle
+  filename, not `CFBundleDisplayName`). The executable inside stays `ScanQRCode`.
+  `build-app.sh` / `package-mas.sh` keep these as `APP_DISPLAY_NAME` vs
+  `APP_NAME`; the `.pkg` stays `ScanQRCode.pkg`.
 
 ## Conventions
 

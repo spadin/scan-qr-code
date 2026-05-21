@@ -21,9 +21,13 @@ done
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
+# APP_NAME is the internal name: scheme, target, executable, CFBundleName.
+# APP_DISPLAY_NAME is the .app bundle's filename — what Finder / the
+# Applications folder show the user. They are deliberately different.
 APP_NAME="ScanQRCode"
+APP_DISPLAY_NAME="Scan Screen QR Code"
 BUNDLE_ID="com.sandropadin.ScanQRCode"
-APP_DIR="$ROOT/build/$APP_NAME.app"
+APP_DIR="$ROOT/build/$APP_DISPLAY_NAME.app"
 BIN_DIR="$APP_DIR/Contents/MacOS"
 RES_DIR="$APP_DIR/Contents/Resources"
 
@@ -41,7 +45,7 @@ xcodebuild -scheme "$APP_NAME" -configuration "$XC_CONFIG" \
   -derivedDataPath "$ROOT/.xcbuild" -destination 'platform=macOS' -quiet build
 BUILD_BIN="$ROOT/.xcbuild/Build/Products/$XC_CONFIG"
 
-echo "▸ Assembling $APP_NAME.app…"
+echo "▸ Assembling $APP_DISPLAY_NAME.app…"
 rm -rf "$APP_DIR"
 mkdir -p "$BIN_DIR" "$RES_DIR"
 
@@ -142,5 +146,5 @@ if [[ "$RUN" == "1" ]]; then
   pkill -x "$APP_NAME" 2>/dev/null || true
   sleep 0.5
   open "$APP_DIR"
-  echo "✓ $APP_NAME is running in the menu bar."
+  echo "✓ $APP_DISPLAY_NAME is running in the menu bar."
 fi
