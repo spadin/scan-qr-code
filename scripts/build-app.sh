@@ -52,6 +52,21 @@ if [[ -f "$ROOT/Resources/AppIcon.icns" ]]; then
   ICON_KEY="<key>CFBundleIconFile</key><string>AppIcon</string>"
 fi
 
+# Build metadata Xcode normally injects. A SwiftPM build has no Xcode project,
+# so these are derived from the toolchain here. App Store Connect validates the
+# binary against them — an incomplete Info.plist makes processing silently
+# reject the build (it never appears in TestFlight).
+SDK_VERSION="$(xcrun --sdk macosx --show-sdk-version)"
+SDK_BUILD="$(xcrun --sdk macosx --show-sdk-build-version)"
+OS_BUILD="$(sw_vers -buildVersion)"
+XCODE_RAW="$(xcodebuild -version 2>/dev/null || true)"
+XCODE_BUILD="$(awk '/^Build version/ {print $3}' <<<"$XCODE_RAW")"
+# DTXcode: 2-digit major, 1-digit minor, 1-digit patch (e.g. 26.4.1 -> 2641).
+DTXCODE="$(awk '/^Xcode/ {print $2}' <<<"$XCODE_RAW" | awk -F. '{printf "%02d%d%d", $1, $2, $3}')"
+
+# CFBundleVersion must increase with every upload — Apple rejects duplicates.
+BUILD_NUMBER="${BUILD_NUMBER:-2}"
+
 cat > "$APP_DIR/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -61,12 +76,25 @@ cat > "$APP_DIR/Contents/Info.plist" <<PLIST
   <key>CFBundleDisplayName</key><string>Scan Screen QR Code</string>
   <key>CFBundleExecutable</key><string>$APP_NAME</string>
   <key>CFBundleIdentifier</key><string>$BUNDLE_ID</string>
+  <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>CFBundleShortVersionString</key><string>1.0.0</string>
-  <key>CFBundleVersion</key><string>1</string>
+  <key>CFBundleVersion</key><string>$BUILD_NUMBER</string>
+  <key>CFBundleSupportedPlatforms</key><array><string>MacOSX</string></array>
   <key>LSMinimumSystemVersion</key><string>14.0</string>
   <key>LSUIElement</key><true/>
+  <key>LSApplicationCategoryType</key><string>public.app-category.utilities</string>
+  <key>ITSAppUsesNonExemptEncryption</key><false/>
   <key>NSHumanReadableCopyright</key><string>MIT License</string>
+  <key>DTCompiler</key><string>com.apple.compilers.llvm.clang.1_0</string>
+  <key>DTPlatformName</key><string>macosx</string>
+  <key>DTPlatformVersion</key><string>$SDK_VERSION</string>
+  <key>DTPlatformBuild</key><string>$SDK_BUILD</string>
+  <key>DTSDKName</key><string>macosx$SDK_VERSION</string>
+  <key>DTSDKBuild</key><string>$SDK_BUILD</string>
+  <key>DTXcode</key><string>$DTXCODE</string>
+  <key>DTXcodeBuild</key><string>$XCODE_BUILD</string>
+  <key>BuildMachineOSBuild</key><string>$OS_BUILD</string>
   $ICON_KEY
 </dict>
 </plist>
