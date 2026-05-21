@@ -7,23 +7,55 @@
 # Prerequisites (one-time, see README "Mac App Store submission"):
 #   1. Apple Developer Program membership.
 #   2. App record + bundle ID `com.sandropadin.ScanQRCode` in App Store Connect.
-#   3. An App Store Connect API key (.p8). Export before running:
-#        export ASC_KEY_ID=XXXXXXXXXX
-#        export ASC_ISSUER_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-#        export ASC_KEY_PATH="$HOME/.appstoreconnect/AuthKey_XXXXXXXXXX.p8"
+#   3. An App Store Connect API key (.p8). Supply it one of two ways:
+#      a. via 1Password — no secrets on disk. Run lanes under `op run`:
+#           op run --env-file=.env.asc -- fastlane release
+#         `key_content` holds the .p8 contents, base64-encoded.
+#      b. as a file on disk:
+#           export ASC_KEY_ID=XXXXXXXXXX
+#           export ASC_ISSUER_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+#           export ASC_KEY_PATH="$HOME/.appstoreconnect/AuthKey_XXXXXXXXXX.p8"
 #
 # Usage:  fastlane certs   |   fastlane package   |   fastlane upload
 #         fastlane release   (certs → package → upload)
 
+require "shellwords"
+
 default_platform(:mac)
 
 def asc_api_key
-  return nil unless ENV["ASC_KEY_ID"] && ENV["ASC_ISSUER_ID"] && ENV["ASC_KEY_PATH"]
-  app_store_connect_api_key(
-    key_id: ENV["ASC_KEY_ID"],
-    issuer_id: ENV["ASC_ISSUER_ID"],
-    key_filepath: ENV["ASC_KEY_PATH"]
-  )
+  return nil unless ENV["ASC_KEY_ID"] && ENV["ASC_ISSUER_ID"]
+
+  if ENV["ASC_KEY_CONTENT"]
+    # Preferred: key supplied in-process (e.g. via `op run`) — never on disk.
+    app_store_connect_api_key(
+      key_id: ENV["ASC_KEY_ID"],
+      issuer_id: ENV["ASC_ISSUER_ID"],
+      key_content: ENV["ASC_KEY_CONTENT"],
+      is_key_content_base64: true
+    )
+  elsif ENV["ASC_KEY_PATH"]
+    # Fallback: .p8 file on disk.
+    app_store_connect_api_key(
+      key_id: ENV["ASC_KEY_ID"],
+      issuer_id: ENV["ASC_ISSUER_ID"],
+      key_filepath: ENV["ASC_KEY_PATH"]
+    )
+  end
+end
+
+# Locate the Mac App Store provisioning profile `fastlane certs` (sigh)
+# downloaded: an explicit PROVISIONING_PROFILE wins, then the in-process sigh
+# result, then the newest *.provisionprofile in the repo root.
+def provisioning_profile_path
+  explicit = ENV["PROVISIONING_PROFILE"]
+  return explicit if explicit && File.exist?(explicit)
+
+  ctx = Actions.lane_context[Actions::SharedValues::SIGH_PROFILE_PATH]
+  return ctx if ctx && File.exist?(ctx)
+
+  root = File.expand_path("..", __dir__)
+  Dir["#{root}/*.provisionprofile"].max_by { |f| File.mtime(f) }
 end
 
 platform :mac do
@@ -60,7 +92,13 @@ platform :mac do
 
   desc "Build + sign the .app and produce a signed .pkg for the App Store"
   lane :package do
-    sh("cd .. && ./scripts/package-mas.sh")
+    profile = provisioning_profile_path
+    unless profile && File.exist?(profile)
+      UI.user_error!("No .provisionprofile found — run `fastlane certs` first " \
+        "(or set PROVISIONING_PROFILE).")
+    end
+    UI.message("Using provisioning profile: #{profile}")
+    sh("cd .. && PROVISIONING_PROFILE=#{profile.shellescape} ./scripts/package-mas.sh")
   end
 
   desc "Upload the signed .pkg to App Store Connect"
