@@ -27,9 +27,19 @@ APP_DIR="$ROOT/build/$APP_NAME.app"
 BIN_DIR="$APP_DIR/Contents/MacOS"
 RES_DIR="$APP_DIR/Contents/Resources"
 
-echo "▸ Building ($CONFIG)…"
-swift build -c "$CONFIG"
-BUILD_BIN="$(swift build -c "$CONFIG" --show-bin-path)"
+# Build with Xcode's build engine — it operates directly on Package.swift (no
+# .xcodeproj needed). Unlike `swift build`, this emits a Bundle.module accessor
+# whose candidate list includes Bundle.main.resourceURL, so SwiftPM resource
+# bundles (KeyboardShortcuts) resolve from Contents/Resources/ — the only
+# bundle layout valid for a code-signed, App Store-eligible .app.
+case "$CONFIG" in
+  release) XC_CONFIG="Release" ;;
+  debug)   XC_CONFIG="Debug" ;;
+esac
+echo "▸ Building ($XC_CONFIG)…"
+xcodebuild -scheme "$APP_NAME" -configuration "$XC_CONFIG" \
+  -derivedDataPath "$ROOT/.xcbuild" -destination 'platform=macOS' -quiet build
+BUILD_BIN="$ROOT/.xcbuild/Build/Products/$XC_CONFIG"
 
 echo "▸ Assembling $APP_NAME.app…"
 rm -rf "$APP_DIR"
@@ -38,10 +48,10 @@ mkdir -p "$BIN_DIR" "$RES_DIR"
 cp "$BUILD_BIN/$APP_NAME" "$BIN_DIR/$APP_NAME"
 
 # SwiftPM resource bundles (e.g. KeyboardShortcuts) resolve via Bundle.module
-# relative to the executable, so they must sit next to the binary.
+# from Bundle.main.resourceURL, so they must sit in Contents/Resources/.
 shopt -s nullglob
 for bundle in "$BUILD_BIN"/*.bundle; do
-  cp -R "$bundle" "$BIN_DIR/"
+  cp -R "$bundle" "$RES_DIR/"
 done
 shopt -u nullglob
 

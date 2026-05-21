@@ -77,7 +77,7 @@ cp "$PROFILE" "$APP/Contents/embedded.provisionprofile"
 echo "▸ Signing as: $DIST_IDENTITY (team $TEAM_ID)"
 # Sign any nested code bundles first, then the app (no --deep for distribution).
 shopt -s nullglob
-for nested in "$APP"/Contents/MacOS/*.bundle; do
+for nested in "$APP"/Contents/Resources/*.bundle; do
   codesign --force --sign "$DIST_IDENTITY" "$nested"
 done
 shopt -u nullglob
