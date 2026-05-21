@@ -129,6 +129,60 @@ platform :mac do
     )
   end
 
+  desc "Deep server-side diagnostic: app versions, prerelease versions, builds"
+  lane :diagnose do
+    require "spaceship"
+    require "base64"
+    Spaceship::ConnectAPI.token = Spaceship::ConnectAPI::Token.create(
+      key_id: ENV["ASC_KEY_ID"],
+      issuer_id: ENV["ASC_ISSUER_ID"],
+      key: Base64.decode64(ENV["ASC_KEY_CONTENT"].to_s)
+    )
+    app = Spaceship::ConnectAPI::App.find("com.sandropadin.ScanQRCode")
+    UI.user_error!("No app record found") unless app
+    UI.success("App: #{app.name} (id #{app.id}) bundle=#{app.bundle_id}")
+
+    UI.header("App Store versions")
+    begin
+      versions = app.get_app_store_versions
+      if versions.to_a.empty?
+        UI.important("  none")
+      else
+        versions.each do |v|
+          UI.message("  #{v.version_string}  platform=#{v.platform}  state=#{v.app_store_state}")
+        end
+      end
+    rescue => e
+      UI.error("  failed: #{e.message}")
+    end
+
+    UI.header("Prerelease (TestFlight) versions")
+    begin
+      pre = Spaceship::ConnectAPI.get_prerelease_versions(filter: { app: app.id })
+      if pre.to_a.empty?
+        UI.important("  none")
+      else
+        pre.each { |p| UI.message("  #{p.version}  platform=#{p.platform}") }
+      end
+    rescue => e
+      UI.error("  failed: #{e.message}")
+    end
+
+    UI.header("Builds (all platforms, newest first)")
+    begin
+      builds = Spaceship::ConnectAPI::Build.all(app_id: app.id, sort: "-uploadedDate", limit: 20)
+      if builds.to_a.empty?
+        UI.important("  none")
+      else
+        builds.each do |b|
+          UI.message("  build #{b.version}  state=#{b.processing_state}  expired=#{b.expired}  uploaded=#{b.uploaded_date}")
+        end
+      end
+    rescue => e
+      UI.error("  failed: #{e.message}")
+    end
+  end
+
   desc "Full release: certs → package → upload"
   lane :release do
     certs

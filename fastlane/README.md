@@ -55,6 +55,14 @@ Upload the signed .pkg to App Store Connect
 
 Validate the signed .pkg against App Store Connect (no upload)
 
+### mac diagnose
+
+```sh
+[bundle exec] fastlane mac diagnose
+```
+
+Deep server-side diagnostic: app versions, prerelease versions, builds
+
 ### mac release
 
 ```sh
