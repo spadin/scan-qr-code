@@ -9,7 +9,6 @@ import ScreenCaptureKit
 /// prompts on first use); ScreenCaptureKit needs no extra entitlement.
 final class ScreenCapture: ScreenCapturing {
     func captureFullScreen() async throws -> CGImage {
-        try preflightPermission()
         let (display, scale) = try await mainDisplay()
         return try await capture(
             display: display,
@@ -22,9 +21,8 @@ final class ScreenCapture: ScreenCapturing {
     }
 
     func captureSelection() async throws -> CGImage {
-        // Pick the region first so the permission prompt (if any) doesn't
-        // interrupt a drag in progress.
-        try preflightPermission()
+        // Select the region first; ScreenCaptureKit raises its permission
+        // prompt during the capture below, so a drag is never interrupted.
         let regionGlobal = try await selectRegion()
 
         guard let screen = NSScreen.main else { throw ScanError.captureFailed }
@@ -58,13 +56,6 @@ final class ScreenCapture: ScreenCapturing {
         try await SelectionOverlay().selectRegion()
     }
 
-    private func preflightPermission() throws {
-        guard CGPreflightScreenCaptureAccess() else {
-            CGRequestScreenCaptureAccess()  // prompt for next time
-            throw ScanError.screenRecordingPermissionDenied
-        }
-    }
-
     private func mainDisplay() async throws -> (SCDisplay, CGFloat) {
         let content: SCShareableContent
         do {
@@ -73,7 +64,10 @@ final class ScreenCapture: ScreenCapturing {
                 onScreenWindowsOnly: true
             )
         } catch {
-            // SCK reports a denial here even after a stale preflight.
+            // ScreenCaptureKit raises the system Screen Recording prompt on
+            // first use and surfaces a denial as an error here. This is the
+            // app's sole permission gate — issuing a separate CoreGraphics
+            // request would show a second, redundant prompt.
             throw ScanError.screenRecordingPermissionDenied
         }
         guard let display = content.displays.first(where: {
