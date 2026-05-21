@@ -38,8 +38,10 @@ qr,qr code,barcode scanner,screen,vision,clipboard,aztec,datamatrix,pdf417,menu 
 
 ### Support URL ⚠️ and Marketing URL
 
-A reachable URL is required. Recommended: push this repo to GitHub and use
-`https://github.com/spadin/scan-qr-code` (README serves as support page).
+- **Support URL**: `https://sa.ndropad.in/scan-qr-code/` — live support/landing
+  page (source in `website/`, deployed to GitHub Pages via
+  `.github/workflows/pages.yml`).
+- **Marketing URL** (optional): same URL, or `https://github.com/spadin/scan-qr-code`.
 
 ### App Previews and Screenshots ⚠️
 
