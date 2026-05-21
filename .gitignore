@@ -9,5 +9,6 @@ fastlane/test_output
 *.provisionprofile
 *.mobileprovision
 *.p8
+*.p12
 *.cer
 *.certSigningRequest
