@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Scan Screen QR Code — macOS menu bar QR scanner</title>
+<meta name="description" content="A native macOS menu bar app that detects QR codes anywhere on your screen and copies them to your clipboard. Private, sandboxed, powered by Apple Vision." />
+<link rel="icon" type="image/png" href="icon.png" />
+<meta property="og:title" content="Scan Screen QR Code" />
+<meta property="og:description" content="Scan any QR code on your Mac's screen — from the menu bar or a global hotkey." />
+<meta property="og:image" content="icon.png" />
+<meta property="og:type" content="website" />
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg-soft: #f5f5f7;
+    --text: #1d1d1f;
+    --text-soft: #6e6e73;
+    --accent: #0071e3;
+    --border: #d2d2d7;
+    --card: #ffffff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000;
+      --bg-soft: #1d1d1f;
+      --text: #f5f5f7;
+      --text-soft: #a1a1a6;
+      --accent: #2997ff;
+      --border: #424245;
+      --card: #1d1d1f;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 24px; }
+  section { padding: 72px 0; }
+
+  /* Hero */
+  .hero { text-align: center; padding: 96px 0 64px; }
+  .hero img.app-icon {
+    width: 128px; height: 128px; border-radius: 28px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.18);
+  }
+  .hero h1 { font-size: 48px; font-weight: 700; letter-spacing: -0.02em; margin: 28px 0 8px; }
+  .hero .tagline { font-size: 21px; color: var(--text-soft); max-width: 620px; margin: 0 auto 32px; }
+  .badges { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .btn {
+    display: inline-block; padding: 12px 24px; border-radius: 980px;
+    font-size: 16px; font-weight: 500; transition: opacity 0.2s;
+  }
+  .btn:hover { text-decoration: none; opacity: 0.85; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-secondary { background: var(--bg-soft); color: var(--text); border: 1px solid var(--border); }
+  .soon { font-size: 13px; color: var(--text-soft); margin-top: 14px; }
+
+  /* Screenshot */
+  .shot { text-align: center; padding-top: 0; }
+  .shot img {
+    max-width: 100%; border-radius: 14px; border: 1px solid var(--border);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.16);
+  }
+
+  h2 { font-size: 34px; font-weight: 700; letter-spacing: -0.02em; text-align: center; margin-bottom: 12px; }
+  .section-sub { text-align: center; color: var(--text-soft); font-size: 18px; margin-bottom: 44px; }
+
+  /* Features */
+  .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .feature {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 26px;
+  }
+  .feature .emoji { font-size: 28px; }
+  .feature h3 { font-size: 18px; margin: 12px 0 6px; }
+  .feature p { color: var(--text-soft); font-size: 15px; }
+
+  /* Steps */
+  .steps { max-width: 640px; margin: 0 auto; }
+  .step { display: flex; gap: 18px; padding: 18px 0; border-bottom: 1px solid var(--border); }
+  .step:last-child { border-bottom: none; }
+  .step .num {
+    flex: 0 0 36px; height: 36px; border-radius: 50%;
+    background: var(--accent); color: #fff; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .step h3 { font-size: 17px; margin-bottom: 2px; }
+  .step p { color: var(--text-soft); font-size: 15px; }
+
+  /* Plain content sections */
+  .soft { background: var(--bg-soft); }
+  .prose { max-width: 680px; margin: 0 auto; }
+  .prose p { color: var(--text-soft); font-size: 17px; margin-bottom: 14px; }
+  .prose ul { color: var(--text-soft); font-size: 17px; margin: 0 0 14px 22px; }
+  .prose li { margin-bottom: 6px; }
+  .prose strong { color: var(--text); }
+  .prose h3 { font-size: 19px; margin: 26px 0 8px; }
+
+  /* Footer */
+  footer { padding: 44px 0; text-align: center; color: var(--text-soft); font-size: 14px; border-top: 1px solid var(--border); }
+  footer a { color: var(--text-soft); }
+
+  @media (max-width: 720px) {
+    .hero h1 { font-size: 36px; }
+    .features { grid-template-columns: 1fr; }
+    h2 { font-size: 28px; }
+    section { padding: 56px 0; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero wrap">
+  <img class="app-icon" src="icon.png" alt="Scan Screen QR Code app icon" />
+  <h1>Scan Screen QR Code</h1>
+  <p class="tagline">Scan any QR code on your Mac's screen — straight from the menu bar or a global hotkey. No phone, no camera.</p>
+  <div class="badges">
+    <a class="btn btn-primary" href="#support">Get Support</a>
+    <a class="btn btn-secondary" href="https://github.com/spadin/scan-qr-code">View on GitHub</a>
+  </div>
+  <p class="soon">Coming soon to the Mac App Store · Free &amp; open source</p>
+</header>
+
+<section class="shot wrap">
+  <img src="screenshot.png" alt="Scan Screen QR Code running in the macOS menu bar" />
+</section>
+
+<section class="wrap">
+  <h2>What it does</h2>
+  <p class="section-sub">Finds and decodes codes anywhere on screen, then copies the result.</p>
+  <div class="features">
+    <div class="feature">
+      <div class="emoji">🖥️</div>
+      <h3>Whole screen or a region</h3>
+      <p>Scan the entire display, or drag to select just the area you care about.</p>
+    </div>
+    <div class="feature">
+      <div class="emoji">⌨️</div>
+      <h3>Menu bar or hotkey</h3>
+      <p>Trigger a scan from the menu bar icon or assign your own global keyboard shortcuts.</p>
+    </div>
+    <div class="feature">
+      <div class="emoji">🔗</div>
+      <h3>Open links automatically</h3>
+      <p>When a code is an http(s) URL, optionally open it in your browser right away.</p>
+    </div>
+    <div class="feature">
+      <div class="emoji">👁️</div>
+      <h3>Powered by Apple Vision</h3>
+      <p>Reads angled, small, and low-contrast codes — plus Aztec, DataMatrix, and PDF417.</p>
+    </div>
+    <div class="feature">
+      <div class="emoji">🔒</div>
+      <h3>Private by design</h3>
+      <p>Capture and detection run entirely on your Mac. Nothing is uploaded or stored.</p>
+    </div>
+    <div class="feature">
+      <div class="emoji">🪶</div>
+      <h3>Lightweight</h3>
+      <p>A tiny sandboxed menu bar agent — no window clutter, no account, no analytics.</p>
+    </div>
+  </div>
+</section>
+
+<section class="soft">
+  <div class="wrap">
+    <h2>How it works</h2>
+    <p class="section-sub">From click to clipboard in a second.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="num">1</div>
+        <div>
+          <h3>Choose a scan</h3>
+          <p>Click the menu bar icon and pick "Scan Screen for QR Code" or "Scan Selected Area" — or use your hotkey.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="num">2</div>
+        <div>
+          <h3>It detects the code</h3>
+          <p>The app captures the screen in-process and decodes any QR, Aztec, DataMatrix, or PDF417 code with Apple's Vision framework.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="num">3</div>
+        <div>
+          <h3>Result on your clipboard</h3>
+          <p>The decoded text is copied and confirmed with a brief floating HUD. If it's a link, it can open automatically.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap">
+  <h2>Privacy</h2>
+  <div class="prose">
+    <p>Scan Screen QR Code is built to be trustworthy with the most sensitive permission a Mac app can ask for.</p>
+    <ul>
+      <li>Screen capture and code detection happen <strong>entirely on your Mac</strong>.</li>
+      <li><strong>Nothing is uploaded</strong>, nothing is stored, and no screenshot is written to disk.</li>
+      <li>No analytics, no tracking, no account — the App Store privacy label is <strong>"Data Not Collected."</strong></li>
+      <li>The app is <strong>sandboxed</strong>, and the full source is <a href="https://github.com/spadin/scan-qr-code">open for anyone to inspect</a>.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="soft" id="support">
+  <div class="wrap">
+    <h2>Support</h2>
+    <p class="section-sub">Questions, bugs, or feedback — here's how to get help.</p>
+    <div class="prose">
+      <h3>Contact</h3>
+      <p>Email <a href="mailto:sandropadin@gmail.com">sandropadin@gmail.com</a>, or open an issue on the <a href="https://github.com/spadin/scan-qr-code/issues">GitHub issue tracker</a>.</p>
+
+      <h3>"Nothing happens when I scan"</h3>
+      <p>macOS requires <strong>Screen Recording</strong> permission. On the first scan the system prompts you — grant it in <strong>System Settings ▸ Privacy &amp; Security ▸ Screen Recording</strong>, enable Scan Screen QR Code, then try the scan again.</p>
+
+      <h3>"No QR code found"</h3>
+      <p>Make sure the code is fully visible on screen and not covered by another window. For small or tightly cropped codes, try "Scan Selected Area" and drag a box around just the code.</p>
+
+      <h3>Requirements</h3>
+      <p>macOS 14 (Sonoma) or later. Scanning the selected area currently targets the main display.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>Scan Screen QR Code — a free, open-source macOS utility.<br />
+    MIT licensed · <a href="https://github.com/spadin/scan-qr-code">Source on GitHub</a></p>
+  </div>
+</footer>
+
+</body>
+</html>
