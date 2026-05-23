@@ -41,15 +41,29 @@ ctx.drawLinearGradient(grad, start: CGPoint(x: 0, y: H),
                        end: CGPoint(x: 0, y: 0), options: [])
 
 func text(_ s: String, _ size: CGFloat, _ bold: Bool, _ col: CGColor,
-          x: CGFloat, y: CGFloat) {
+          x: CGFloat, y: CGFloat, rightAlignTo: CGFloat? = nil) {
     let font = CTFontCreateWithName(
         (bold ? "HelveticaNeue-Bold" : "HelveticaNeue") as CFString, size, nil)
     let attr = [kCTFontAttributeName: font,
                 kCTForegroundColorAttributeName: col] as CFDictionary
     let line = CTLineCreateWithAttributedString(
         CFAttributedStringCreate(nil, s as CFString, attr)!)
-    ctx.textPosition = CGPoint(x: x, y: y)
+    var drawX = x
+    if let edge = rightAlignTo {
+        // CTLineGetTypographicBounds returns the advance width.
+        drawX = edge - CGFloat(CTLineGetTypographicBounds(line, nil, nil, nil))
+    }
+    ctx.textPosition = CGPoint(x: drawX, y: y)
     CTLineDraw(line, ctx)
+}
+
+func textWidth(_ s: String, _ size: CGFloat, _ bold: Bool = false) -> CGFloat {
+    let font = CTFontCreateWithName(
+        (bold ? "HelveticaNeue-Bold" : "HelveticaNeue") as CFString, size, nil)
+    let attr = [kCTFontAttributeName: font] as CFDictionary
+    let line = CTLineCreateWithAttributedString(
+        CFAttributedStringCreate(nil, s as CFString, attr)!)
+    return CGFloat(CTLineGetTypographicBounds(line, nil, nil, nil))
 }
 
 func roundRect(_ r: CGRect, _ rad: CGFloat, _ fill: CGColor) {
@@ -69,17 +83,83 @@ text("Scan Screen QR Code", 70, true, white, x: 470, y: H - 235)
 text("QR codes on your screen → your clipboard.", 34, false,
      c(1, 1, 1, 0.85), x: 472, y: H - 290)
 
-// Mock menu card.
-let menu = CGRect(x: 130, y: 150, width: 560, height: 360)
-roundRect(menu, 22, c(1, 1, 1, 0.97))
-let items = ["Scan Screen for QR Code        ⌥⌘1",
-             "Scan Selected Area for QR Code ⌥⌘2",
-             "✓ Open URL If Found",
-             "Settings…                          ⌘,",
-             "Quit Scan Screen QR Code           ⌘Q"]
-for (i, it) in items.enumerated() {
-    text(it, 27, false, c(0.12, 0.12, 0.16),
-         x: menu.minX + 36, y: menu.maxY - 70 - CGFloat(i) * 58)
+// Mock menu card — approximates a real macOS menu: light gray background
+// (≈ NSColor.windowBackgroundColor under vibrancy), thin group separators,
+// soft drop shadow, secondary-color shortcuts right-aligned.
+//
+// Scan-command shortcuts are user-assignable (no defaults), so the first two
+// rows show no shortcut; Settings/Quit keep their standard ⌘, / ⌘Q.
+// `checked: true` puts a ✓ in the menu's left gutter (real AppKit behavior).
+// Labels are indented enough to leave room for that gutter on every row, so
+// checked/unchecked rows align visually like a real macOS menu. Groups are
+// separated by thin horizontal lines, matching how AppKit collates them.
+let groups: [[(label: String, shortcut: String?, checked: Bool)]] = [
+    [("Scan Screen for QR Code", nil, false),
+     ("Scan Selected Area for QR Code", nil, false)],
+    [("Open URL If Found", nil, true)],
+    [("Settings…", "⌘ ,", false)],
+    [("Quit Scan Screen QR Code", "⌘ Q", false)],
+]
+let menuX: CGFloat = 130
+let menuW: CGFloat = 560
+let rowH: CGFloat = 46
+let separatorGap: CGFloat = 18
+let topPad: CGFloat = 18
+let bottomPad: CGFloat = 18
+let totalRows = groups.reduce(0) { $0 + $1.count }
+let totalSeparators = groups.count - 1
+let menuH = topPad + bottomPad + CGFloat(totalRows) * rowH + CGFloat(totalSeparators) * separatorGap
+let menu = CGRect(x: menuX, y: 510 - menuH, width: menuW, height: menuH)
+
+// Soft drop shadow under the card.
+ctx.saveGState()
+ctx.setShadow(offset: CGSize(width: 0, height: -8),
+              blur: 28,
+              color: c(0, 0, 0, 0.22))
+roundRect(menu, 12, c(0.945, 0.945, 0.955, 1))
+ctx.restoreGState()
+
+let labelColor = c(0.12, 0.12, 0.16)
+let shortcutColor = c(0.50, 0.50, 0.54)   // ≈ NSColor.secondaryLabelColor, nudged darker for screenshot legibility
+let separatorColor = c(0, 0, 0, 0.10)
+let fontSize: CGFloat = 26
+let gutterX: CGFloat = 22                 // ✓ position from menu's left edge
+let labelX: CGFloat = 48                  // text indented past the gutter
+let rightPad: CGFloat = 22
+
+// Shortcuts in a real macOS menu share a column: every ⌘ glyph lines up at
+// the same x, with the modifier-target ("," or "Q") trailing — i.e. shortcuts
+// are LEFT-aligned to a column sized by the widest one.
+let maxShortcutWidth = groups.flatMap { $0 }.compactMap { $0.shortcut }
+    .map { textWidth($0, fontSize) }.max() ?? 0
+let shortcutColumnX = menu.maxX - rightPad - maxShortcutWidth
+
+var rowTopY = menu.maxY - topPad
+for (gIdx, group) in groups.enumerated() {
+    for item in group {
+        // Baseline centered within the row.
+        let baseY = rowTopY - rowH * 0.65
+        if item.checked {
+            text("✓", fontSize, false, labelColor,
+                 x: menu.minX + gutterX, y: baseY)
+        }
+        text(item.label, fontSize, false, labelColor,
+             x: menu.minX + labelX, y: baseY)
+        if let sc = item.shortcut {
+            text(sc, fontSize, false, shortcutColor,
+                 x: shortcutColumnX, y: baseY)
+        }
+        rowTopY -= rowH
+    }
+    if gIdx < groups.count - 1 {
+        let sepY = rowTopY - separatorGap / 2
+        ctx.setStrokeColor(separatorColor)
+        ctx.setLineWidth(1)
+        ctx.move(to: CGPoint(x: menu.minX + 14, y: sepY))
+        ctx.addLine(to: CGPoint(x: menu.maxX - 14, y: sepY))
+        ctx.strokePath()
+        rowTopY -= separatorGap
+    }
 }
 
 // Result HUD pill.
