@@ -183,6 +183,38 @@ platform :mac do
     end
   end
 
+  desc "Push App Store listing metadata + screenshots (no build upload)"
+  lane :deliver_metadata do
+    # Reads fastlane/metadata/ and fastlane/screenshots/ and pushes them to
+    # App Store Connect's 1.0 version. Does NOT upload a build — use `upload`
+    # for that. Safe to re-run; deliver diffs and only updates what changed.
+    #
+    # The reviewer phone number is injected from ASC_REVIEW_PHONE (resolved
+    # from 1Password by `op run --env-file=.env.asc`) so it stays out of the
+    # repo. Name/email come from text files (already non-private).
+    phone = ENV["ASC_REVIEW_PHONE"]
+    UI.user_error!("ASC_REVIEW_PHONE not set — run under `op run --env-file=.env.asc`") if phone.to_s.empty?
+
+    upload_to_app_store(
+      api_key: asc_api_key,
+      platform: "osx",              # deliver defaults to iOS; we're Mac App Store
+      app_version: "1.0",
+      skip_binary_upload: true,
+      skip_metadata: false,
+      skip_screenshots: false,
+      precheck_include_in_app_purchases: false,
+      force: true,                  # skip the HTML preview prompt
+      submit_for_review: false,
+      app_review_information: {
+        first_name: File.read("metadata/review_information/first_name.txt").strip,
+        last_name:  File.read("metadata/review_information/last_name.txt").strip,
+        email_address: File.read("metadata/review_information/email_address.txt").strip,
+        phone_number: phone,
+        notes: File.read("metadata/review_information/notes.txt").strip
+      }
+    )
+  end
+
   desc "Full release: certs → package → upload"
   lane :release do
     certs

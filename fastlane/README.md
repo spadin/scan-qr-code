@@ -63,6 +63,14 @@ Validate the signed .pkg against App Store Connect (no upload)
 
 Deep server-side diagnostic: app versions, prerelease versions, builds
 
+### mac deliver_metadata
+
+```sh
+[bundle exec] fastlane mac deliver_metadata
+```
+
+Push App Store listing metadata + screenshots (no build upload)
+
 ### mac release
 
 ```sh

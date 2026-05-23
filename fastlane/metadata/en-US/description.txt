@@ -1,0 +1,8 @@
+Scan Screen QR Code finds and decodes QR codes anywhere on your Mac's screen and copies the result to your clipboard — no phone, no camera, no fiddling.
+
+• Scan the whole screen, or drag to select just a region.
+• Trigger it from the menu bar or assign your own global keyboard shortcuts.
+• Optionally open the link automatically when the code is a URL.
+• Powered by Apple's Vision framework — reads angled, small, and low-contrast codes, plus Aztec, DataMatrix, and PDF417.
+
+Private by design: capture and detection happen entirely on your Mac. Nothing is uploaded, nothing is stored, no analytics, no account. The app is sandboxed and collects no data.

@@ -1,0 +1,1 @@
+Scan any QR code on your screen instantly — from the menu bar or a global hotkey. Copies the result, optionally opens links. Powered by Apple Vision.

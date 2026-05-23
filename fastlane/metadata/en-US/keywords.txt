@@ -1,0 +1,1 @@
+qr,qr code,barcode scanner,screen,vision,clipboard,aztec,datamatrix,pdf417,menu bar,hotkey
