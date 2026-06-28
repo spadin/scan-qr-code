@@ -79,7 +79,9 @@ XCODE_BUILD="$(awk '/^Build version/ {print $3}' <<<"$XCODE_RAW")"
 DTXCODE="$(awk '/^Xcode/ {print $2}' <<<"$XCODE_RAW" | awk -F. '{printf "%02d%d%d", $1, $2, $3}')"
 
 # CFBundleVersion must increase with every upload — Apple rejects duplicates.
-BUILD_NUMBER="${BUILD_NUMBER:-2}"
+# Build 4 was the last submitted; 5 adds the welcome/how-to window. Override
+# with BUILD_NUMBER=… for a one-off.
+BUILD_NUMBER="${BUILD_NUMBER:-5}"
 
 cat > "$APP_DIR/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
