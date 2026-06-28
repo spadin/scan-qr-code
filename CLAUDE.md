@@ -69,13 +69,24 @@ does. Don't widen the seam casually — it's deliberately small.
 
 - Match the existing concise doc-comment style; no ceremony.
 - Not on a feature-branch workflow; commit to the working branch. Commit
-  messages end with the `Co-Authored-By: Claude Opus 4.7` trailer.
+  messages end with a `Co-Authored-By: Claude <model>` trailer naming the
+  model that wrote them (history mixes versions, e.g. Opus 4.7 / 4.8).
 - After UI/string/behavior changes, rebuild via `build-app.sh --run` and keep
   `swift test` green.
 
 ## Status / outstanding
 
-See the project memory (`app-store-submission-status`). Summary: code is
-store-ready; app record exists (id 6770797205); remaining = website→Support URL
-(user, 2026-05-19), Mac Installer Distribution cert + ASC API key + `fastlane`
-upload, and a manual runtime scan test (grant Screen Recording, try both scans).
+See the project memory (`app-store-submission-status`) for the full chain.
+Summary: app record exists (id 6770797205); build 4 was **rejected twice**
+under Guideline 2.1(a). The second rejection ("failed to launch any main
+window or menu bar extra") was a discoverability issue, not a crash — a pure
+menu bar agent shows no UI on launch, so the reviewer never found the status
+item. Fixed by the welcome/how-to window (`WelcomeWindow.swift`) that auto-
+shows on launch independent of the status item.
+
+Remaining: resubmit — bump CFBundleVersion to 5 (`BUILD_NUMBER=5` /
+`fastlane release`), `fastlane package` + `upload`, bind build 5 to version
+1.0, and reply in Resolution Center pointing at the new auto-shown window +
+the test-codes page (https://sa.ndropad.in/scan-qr-code/test-codes.html).
+Still worth a manual runtime scan test (grant Screen Recording, try both
+scans) before resubmitting.
