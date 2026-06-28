@@ -28,5 +28,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let hotkeys = HotkeyManager()
         hotkeys.register()
         self.hotkeys = hotkeys
+
+        // The app is a headless menu bar agent; surface a visible window on
+        // launch (default on) so it's obvious it started even if the menu bar
+        // status item is hidden behind a crowded bar / notch.
+        if AppPreferences.showWelcomeAtLaunch {
+            menuBar.showWelcome()
+        }
     }
 }

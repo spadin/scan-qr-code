@@ -7,6 +7,7 @@ import KeyboardShortcuts
 final class MenuBarController: NSObject, NSMenuDelegate {
     private var statusItem: NSStatusItem?
     private let settings = SettingsWindowController()
+    private let welcome = WelcomeWindowController()
     private let openURLItem = NSMenuItem(
         title: "Open URL If Found",
         action: #selector(toggleOpenURL(_:)),
@@ -18,6 +19,9 @@ final class MenuBarController: NSObject, NSMenuDelegate {
     }
 
     func install() {
+        welcome.scanScreenAction = { ScanEngine.shared.performScan(.fullScreen) }
+        welcome.openSettingsAction = { [weak self] in self?.settings.show() }
+
         let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         statusItem.button?.image = NSImage(
             systemSymbolName: "qrcode.viewfinder",
@@ -53,6 +57,14 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         menu.addItem(openURLItem)
 
         menu.addItem(.separator())
+
+        let welcomeItem = NSMenuItem(
+            title: "How to Use Scan Screen QR Code",
+            action: #selector(showWelcomeFromMenu(_:)),
+            keyEquivalent: ""
+        )
+        welcomeItem.target = self
+        menu.addItem(welcomeItem)
 
         let settingsItem = NSMenuItem(
             title: "Settings…",
@@ -90,7 +102,18 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         KeyboardShortcuts.enable(.scanScreen, .scanSelection)
     }
 
+    /// Shown automatically at launch (when enabled) by `AppDelegate`, and on
+    /// demand from the menu. The window appears even if the status item is
+    /// hidden behind a crowded menu bar / notch, so launching is always visible.
+    func showWelcome() {
+        welcome.show()
+    }
+
     // MARK: - Actions
+
+    @objc private func showWelcomeFromMenu(_ sender: Any?) {
+        welcome.show()
+    }
 
     @objc private func scanScreen(_ sender: Any?) {
         ScanEngine.shared.performScan(.fullScreen)
