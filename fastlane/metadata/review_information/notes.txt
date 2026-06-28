@@ -1,3 +1,8 @@
-Scan Screen QR Code is a menu bar utility that detects QR codes on the user's screen locally using Apple's Vision framework. It requires Screen Recording permission solely to capture the screen for on-device QR detection. No screen content, image, or any other data is transmitted off the device or stored.
+Scan Screen QR Code is a menu bar utility (no Dock icon by design) that detects QR, Aztec, DataMatrix, and PDF417 codes on the user's screen locally using Apple's Vision framework. It requires Screen Recording permission solely to capture the screen for on-device detection. No screen content, image, or any other data is transmitted off the device or stored.
 
-To test: grant Screen Recording when prompted, display any QR code on screen, then choose "Scan Screen for QR Code" from the menu bar icon — the decoded text is copied to the clipboard and shown in a brief HUD.
+On launch, the app automatically opens a welcome window confirming it is running and showing where to find the menu bar icon — so the app is discoverable even if the menu bar is full.
+
+To test:
+1. Launch the app — the welcome window appears.
+2. Open a page with a code visible, e.g. https://sa.ndropad.in/scan-qr-code/test-codes.html
+3. Click "Scan Screen Now" in the welcome window (or use the menu bar icon — "Scan Screen for QR Code"). Grant Screen Recording when prompted, then scan again. The decoded text is copied to the clipboard and shown in a brief HUD; the test page lists each code's expected value.
