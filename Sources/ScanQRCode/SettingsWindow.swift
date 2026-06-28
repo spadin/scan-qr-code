@@ -18,7 +18,7 @@ final class SettingsWindowController {
             window.title = "Scan Screen QR Code Settings"
             window.styleMask = [.titled, .closable]
             window.isReleasedWhenClosed = false
-            window.setContentSize(NSSize(width: 420, height: 220))
+            window.setContentSize(NSSize(width: 420, height: 300))
             window.center()
             self.window = window
         }
@@ -28,6 +28,8 @@ final class SettingsWindowController {
 }
 
 private struct SettingsView: View {
+    @State private var showWelcomeAtLaunch = AppPreferences.showWelcomeAtLaunch
+
     var body: some View {
         Form {
             Section {
@@ -47,8 +49,15 @@ private struct SettingsView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
+
+            Section {
+                Toggle("Show welcome window at launch", isOn: $showWelcomeAtLaunch)
+                    .onChange(of: showWelcomeAtLaunch) { _, newValue in
+                        AppPreferences.showWelcomeAtLaunch = newValue
+                    }
+            }
         }
         .formStyle(.grouped)
-        .frame(width: 420, height: 220)
+        .frame(width: 420, height: 300)
     }
 }
