@@ -53,6 +53,10 @@
   }
   .hero h1 { font-size: 48px; font-weight: 700; letter-spacing: -0.02em; margin: 28px 0 8px; }
   .hero .tagline { font-size: 21px; color: var(--text-soft); max-width: 620px; margin: 0 auto 32px; }
+  .store { display: flex; justify-content: center; margin-bottom: 18px; }
+  .store-badge { display: inline-block; transition: opacity 0.2s; }
+  .store-badge:hover { opacity: 0.85; }
+  .store-badge img { height: 48px; width: auto; display: block; }
   .badges { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
   .btn {
     display: inline-block; padding: 12px 24px; border-radius: 980px;
@@ -122,11 +126,16 @@
   <img class="app-icon" src="icon.png" alt="Scan Screen QR Code app icon" />
   <h1>Scan Screen QR Code</h1>
   <p class="tagline">Scan any QR code on your Mac's screen — straight from the menu bar or a global hotkey. No phone, no camera.</p>
+  <div class="store">
+    <a class="store-badge" href="https://apps.apple.com/app/id6770797205" aria-label="Download Scan Screen QR Code on the Mac App Store">
+      <img src="mac-app-store-badge.svg" alt="Download on the Mac App Store" />
+    </a>
+  </div>
   <div class="badges">
-    <a class="btn btn-primary" href="#support">Get Support</a>
+    <a class="btn btn-secondary" href="#support">Get Support</a>
     <a class="btn btn-secondary" href="https://github.com/spadin/scan-qr-code">View on GitHub</a>
   </div>
-  <p class="soon">Coming soon to the Mac App Store · Free &amp; open source</p>
+  <p class="soon">Free &amp; open source · macOS 14 or later</p>
 </header>
 
 <section class="shot wrap">
