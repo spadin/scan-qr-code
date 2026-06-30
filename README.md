@@ -5,7 +5,7 @@ the result to your clipboard. Uses Apple's Vision framework for accurate
 detection — handles angled, small, and low-contrast codes that simpler
 libraries miss. Supports QR, Aztec, DataMatrix, and PDF417.
 
-Inspired by the [Raycast extension of the same name](../raycast-scan-qr-code),
+Inspired by the [Raycast extension of the same name](https://github.com/spadin/raycast-scan-qr-code),
 rebuilt as a standalone agent app. Everything runs in-process, in the **App
 Sandbox**.
 
