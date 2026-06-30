@@ -16,9 +16,13 @@
     --bg-soft: #f5f5f7;
     --text: #1d1d1f;
     --text-soft: #6e6e73;
-    --accent: #0071e3;
+    --accent: #5856d6;
+    --accent-strong: #4644b8;
+    --accent-tint: rgba(88, 86, 214, 0.10);
+    --accent-glow: rgba(88, 86, 214, 0.12);
     --border: #d2d2d7;
     --card: #ffffff;
+    --shadow: rgba(0, 0, 0, 0.06);
     --gutter: 24px;
   }
   @media (prefers-color-scheme: dark) {
@@ -27,9 +31,13 @@
       --bg-soft: #1d1d1f;
       --text: #f5f5f7;
       --text-soft: #a1a1a6;
-      --accent: #2997ff;
+      --accent: #7d7bff;
+      --accent-strong: #6a68f0;
+      --accent-tint: rgba(125, 123, 255, 0.16);
+      --accent-glow: rgba(125, 123, 255, 0.14);
       --border: #424245;
       --card: #1d1d1f;
+      --shadow: rgba(0, 0, 0, 0.4);
     }
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -47,7 +55,10 @@
   section { padding: 72px 0; }
 
   /* Hero */
-  .hero { text-align: center; padding: 96px var(--gutter) 64px; }
+  .hero {
+    text-align: center; padding: 96px var(--gutter) 64px;
+    background: radial-gradient(ellipse 70% 60% at 50% -8%, var(--accent-glow), transparent 70%);
+  }
   .hero img.app-icon {
     width: 128px; height: 128px; border-radius: 28px;
     box-shadow: 0 12px 32px rgba(0,0,0,0.18);
@@ -61,11 +72,16 @@
   .badges { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
   .btn {
     display: inline-block; padding: 12px 24px; border-radius: 980px;
-    font-size: 16px; font-weight: 500; transition: opacity 0.2s;
+    font-size: 16px; font-weight: 500;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s, background 0.2s;
   }
-  .btn:hover { text-decoration: none; opacity: 0.85; }
-  .btn-primary { background: var(--accent); color: #fff; }
-  .btn-secondary { background: var(--bg-soft); color: var(--text); border: 1px solid var(--border); }
+  .btn:hover { text-decoration: none; transform: translateY(-1px); }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+    color: #fff; box-shadow: 0 6px 16px var(--accent-glow);
+  }
+  .btn-secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); box-shadow: 0 4px 14px var(--shadow); }
   .soon { font-size: 13px; color: var(--text-soft); margin-top: 14px; }
 
   /* Screenshot */
@@ -83,9 +99,20 @@
   .feature {
     background: var(--card); border: 1px solid var(--border);
     border-radius: 16px; padding: 26px;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
   }
-  .feature .emoji { font-size: 28px; }
-  .feature h3 { font-size: 18px; margin: 12px 0 6px; }
+  .feature:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 32px var(--shadow);
+    border-color: transparent;
+  }
+  .icon-tile {
+    width: 46px; height: 46px; border-radius: 13px;
+    background: var(--accent-tint); color: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .icon-tile svg { width: 25px; height: 25px; }
+  .feature h3 { font-size: 18px; margin: 16px 0 6px; }
   .feature p { color: var(--text-soft); font-size: 15px; }
 
   /* Steps */
@@ -94,7 +121,8 @@
   .step:last-child { border-bottom: none; }
   .step .num {
     flex: 0 0 36px; height: 36px; border-radius: 50%;
-    background: var(--accent); color: #fff; font-weight: 600;
+    background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+    color: #fff; font-weight: 600;
     display: flex; align-items: center; justify-content: center;
   }
   .step h3 { font-size: 17px; margin-bottom: 2px; }
@@ -102,12 +130,19 @@
 
   /* Plain content sections */
   .soft { background: var(--bg-soft); }
-  .prose { max-width: 680px; margin: 0 auto; }
+  .prose {
+    max-width: 700px; margin: 0 auto;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 18px; padding: 32px 36px;
+    box-shadow: 0 4px 24px var(--shadow);
+  }
   .prose p { color: var(--text-soft); font-size: 17px; margin-bottom: 14px; }
+  .prose p:last-child { margin-bottom: 0; }
   .prose ul { color: var(--text-soft); font-size: 17px; margin: 0 0 14px 22px; }
   .prose li { margin-bottom: 6px; }
   .prose strong { color: var(--text); }
   .prose h3 { font-size: 19px; margin: 26px 0 8px; }
+  .prose h3:first-child { margin-top: 0; }
 
   /* Footer */
   footer { padding: 44px 0; text-align: center; color: var(--text-soft); font-size: 14px; border-top: 1px solid var(--border); }
@@ -115,10 +150,12 @@
 
   @media (max-width: 720px) {
     :root { --gutter: 28px; }
+    .hero { padding-top: 72px; }
     .hero h1 { font-size: 36px; }
     .features { grid-template-columns: 1fr; }
     h2 { font-size: 28px; }
     section { padding: 56px 0; }
+    .prose { padding: 26px 24px; }
   }
 </style>
 </head>
@@ -149,32 +186,44 @@
   <p class="section-sub">Finds and decodes codes anywhere on screen, then copies the result.</p>
   <div class="features">
     <div class="feature">
-      <div class="emoji">🖥️</div>
+      <div class="icon-tile">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M2 6h14a2 2 0 0 1 2 2v14"/></svg>
+      </div>
       <h3>Whole screen or a region</h3>
       <p>Scan the entire display, or drag to select just the area you care about.</p>
     </div>
     <div class="feature">
-      <div class="emoji">⌨️</div>
+      <div class="icon-tile">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"/></svg>
+      </div>
       <h3>Menu bar or hotkey</h3>
       <p>Trigger a scan from the menu bar icon or assign your own global keyboard shortcuts.</p>
     </div>
     <div class="feature">
-      <div class="emoji">🔗</div>
+      <div class="icon-tile">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+      </div>
       <h3>Open links automatically</h3>
       <p>When a code is an http(s) URL, optionally open it in your browser right away.</p>
     </div>
     <div class="feature">
-      <div class="emoji">👁️</div>
+      <div class="icon-tile">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+      </div>
       <h3>Powered by Apple Vision</h3>
       <p>Reads angled, small, and low-contrast codes — plus Aztec, DataMatrix, and PDF417.</p>
     </div>
     <div class="feature">
-      <div class="emoji">🔒</div>
+      <div class="icon-tile">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg>
+      </div>
       <h3>Private by design</h3>
       <p>Capture and detection run entirely on your Mac. Nothing is uploaded or stored.</p>
     </div>
     <div class="feature">
-      <div class="emoji">🪶</div>
+      <div class="icon-tile">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/><path d="M16 8 2 22"/><path d="M17.5 15H9"/></svg>
+      </div>
       <h3>Lightweight</h3>
       <p>A tiny sandboxed menu bar agent — no window clutter, no account, no analytics.</p>
     </div>
