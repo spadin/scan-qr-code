@@ -129,7 +129,15 @@
   .step p { color: var(--text-soft); font-size: 15px; }
 
   /* Plain content sections */
-  .soft { background: var(--bg-soft); }
+  .soft {
+    background: linear-gradient(
+      to bottom,
+      var(--bg) 0,
+      var(--bg-soft) 120px,
+      var(--bg-soft) calc(100% - 120px),
+      var(--bg) 100%
+    );
+  }
   .prose {
     max-width: 700px; margin: 0 auto;
     background: var(--card); border: 1px solid var(--border);
