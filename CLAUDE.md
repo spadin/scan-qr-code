@@ -74,19 +74,17 @@ does. Don't widen the seam casually — it's deliberately small.
 - After UI/string/behavior changes, rebuild via `build-app.sh --run` and keep
   `swift test` green.
 
-## Status / outstanding
+## Status
 
-See the project memory (`app-store-submission-status`) for the full chain.
-Summary: app record exists (id 6770797205); build 4 was **rejected twice**
-under Guideline 2.1(a). The second rejection ("failed to launch any main
-window or menu bar extra") was a discoverability issue, not a crash — a pure
-menu bar agent shows no UI on launch, so the reviewer never found the status
-item. Fixed by the welcome/how-to window (`WelcomeWindow.swift`) that auto-
-shows on launch independent of the status item.
+**Live on the Mac App Store** — v1.0 / build 5 (app id 6770797205,
+https://apps.apple.com/app/id6770797205). Build 4 was rejected twice under
+Guideline 2.1(a) — the second rejection ("failed to launch any main window or
+menu bar extra") was a discoverability issue, not a crash: a pure menu bar
+agent shows no UI on launch, so the reviewer never found the status item.
+Fixed by the welcome/how-to window (`WelcomeWindow.swift`) that auto-shows on
+launch independent of the status item; build 5 cleared review.
 
-Remaining: resubmit — bump CFBundleVersion to 5 (`BUILD_NUMBER=5` /
-`fastlane release`), `fastlane package` + `upload`, bind build 5 to version
-1.0, and reply in Resolution Center pointing at the new auto-shown window +
-the test-codes page (https://sa.ndropad.in/scan-qr-code/test-codes.html).
-Still worth a manual runtime scan test (grant Screen Recording, try both
-scans) before resubmitting.
+For the next version: bump CFBundleVersion, update
+`fastlane/metadata/en-US/release_notes.txt`, `fastlane release`, bind the build
+to the version, submit. See the project memory (`app-store-submission-status`)
+for the full cert + fastlane pipeline.

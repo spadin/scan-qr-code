@@ -7,7 +7,15 @@ libraries miss. Supports QR, Aztec, DataMatrix, and PDF417.
 
 Inspired by the [Raycast extension of the same name](../raycast-scan-qr-code),
 rebuilt as a standalone agent app. Everything runs in-process, in the **App
-Sandbox**, so it is eligible for the Mac App Store.
+Sandbox**.
+
+## Install
+
+**[Download on the Mac App Store →](https://apps.apple.com/app/id6770797205)**
+
+Free, sandboxed, and **"Data Not Collected."** macOS 14 (Sonoma) or later.
+
+Prefer to build it yourself? See [Build](#build) below.
 
 ## Menu bar actions
 
@@ -77,13 +85,26 @@ swift build      # compile the package
 swift test       # run the QR-detection + utility tests
 ```
 
-## Mac App Store submission
+## Mac App Store releases
 
-The code is store-eligible (sandboxed, no private APIs, in-process capture) and
-release tooling is wired with **fastlane**. The remaining work is account
-setup, not code.
+The app is **published on the Mac App Store**
+([id 6770797205](https://apps.apple.com/app/id6770797205)). It's sandboxed,
+uses no private APIs, and captures in-process; release tooling is wired with
+**fastlane**.
 
-**One-time account steps (manual — only you can do these):**
+**Cutting a new version (account + certs already set up):**
+
+```bash
+fastlane release      # certs → build+sign .pkg → upload to App Store Connect
+```
+
+or step by step: `fastlane certs`, `fastlane package`, `fastlane upload`. Bump
+`CFBundleVersion`, update `fastlane/metadata/en-US/release_notes.txt`, then bind
+the new build to the version and submit from App Store Connect once it finishes
+processing.
+
+<details>
+<summary>One-time account setup (already done for this app)</summary>
 
 1. Enroll in the **Apple Developer Program** ($99/yr).
 2. In **App Store Connect**, create the app record and register bundle ID
@@ -100,18 +121,7 @@ setup, not code.
    export ASC_KEY_PATH="$HOME/.appstoreconnect/AuthKey_XXXXXXXXXX.p8"
    ```
 
-**Then the whole release is:**
-
-```bash
-fastlane release      # certs → build+sign .pkg → upload to App Store Connect
-```
-
-or step by step: `fastlane certs`, `fastlane package`, `fastlane upload`.
-Submit for review from App Store Connect once the build finishes processing.
-
-The icon is a generated placeholder (`./scripts/make-icon.sh`); replace the
-artwork in `Resources/AppIcon-1024.png` (or edit the drawing in that script)
-and rebuild before shipping if you want something custom.
+</details>
 
 ## Project layout
 
